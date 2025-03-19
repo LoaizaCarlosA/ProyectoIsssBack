@@ -11,7 +11,7 @@ app.use(cors({
 }));
 
 // Ruta para obtener los datos del archivo Excel
-app.get('/api/excel-data', (req, res) => {
+app.get('/empleados', (req, res) => {
   const workbook = XLSX.readFile('C:/Users/Usuario/Desktop/Backend/Padron_Unificado.xlsx');  // Ruta completa de tu archivo Excel
   const sheet_name_list = workbook.SheetNames;
   const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);

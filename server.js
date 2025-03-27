@@ -7,7 +7,8 @@ const port = 5000;
 
 // Usar CORS para permitir solicitudes solo desde el origen http://localhost:8083
 app.use(cors({
-  origin: 'http://localhost:8083',  // Cambia esto por la URL de tu frontend si es diferente
+  origin: ['http://localhost:8083', 'http://192.168.21.18:8083', 'http://192.168.21.18:8084']
+/*   origin: 'http://localhost:8083',  // Cambia esto por la URL de tu frontend si es diferente */
 }));
 
 // Ruta para obtener los datos del archivo Excel
@@ -18,6 +19,6 @@ app.get('/empleados', (req, res) => {
   res.json(jsonData);  // Enviar los datos al frontend
 });
 
-app.listen(port, () => {
-  console.log(`Servidor corriendo en http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Servidor corriendo en http://0.0.0.0:${port}`);
 });

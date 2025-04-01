@@ -1,24 +1,25 @@
 const express = require('express');
 const cors = require('cors');
-const XLSX = require('xlsx');  // Usamos XLSX para leer el archivo Excel
+const connection = require('./db');  // Importamos la conexión a MySQL
 
 const app = express();
 const port = 5000;
 
-// Usar CORS para permitir solicitudes solo desde el origen http://localhost:8083
-app.use(cors({
-  origin: ['http://localhost:8083', 'http://192.168.21.18:8083', 'http://192.168.21.18:8084']
-/*   origin: 'http://localhost:8083',  // Cambia esto por la URL de tu frontend si es diferente */
-}));
+app.use(cors({  origin: ['http://localhost:8083', 'http://192.168.21.18:8083', 'http://192.168.21.18:8084'] })); // Permitir solicitudes desde el frontend
 
-// Ruta para obtener los datos del archivo Excel
+// Ruta para obtener todos los datos de la tabla `padron_unificado`
 app.get('/empleados', (req, res) => {
-  const workbook = XLSX.readFile('C:/Users/Usuario/Desktop/Backend/Padron_Unificado.xlsx');  // Ruta completa de tu archivo Excel
-  const sheet_name_list = workbook.SheetNames;
-  const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
-  res.json(jsonData);  // Enviar los datos al frontend
+  connection.query('SELECT * FROM empleados', (err, results) => {
+    if (err) {
+      console.error('Error en la consulta:', err);
+      res.status(500).json({ error: 'Error al obtener los datos' });
+    } else {
+      res.json(results);
+    }
+  });
 });
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Servidor corriendo en http://0.0.0.0:${port}`);
+// Iniciar el servidor
+app.listen(port, () => {
+  console.log(`Servidor corriendo en http://localhost:${port}`);
 });

@@ -76,6 +76,21 @@ app.delete('/administradores/:numero_empleado', (req, res) => {
   });
 });
 
+// Agrega la ruta de autenticación para el login
+app.post('/api/auth/login', async (req, res) => {
+  const { correo, contrasena } = req.body;
+
+  // Llamamos al servicio para verificar el correo y la contraseña
+  administradorService.login(correo, contrasena)
+    .then(token => {
+      res.json({ token }); // Enviamos el token al frontend
+    })
+    .catch(err => {
+      console.error('Error al iniciar sesión:', err);
+      res.status(401).json({ error: 'Credenciales inválidas' });
+    });
+});
+
 // **Iniciar el servidor**
 app.listen(port, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${port}`);

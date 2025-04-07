@@ -16,6 +16,7 @@ app.use(
       "http://localhost:8083",
       "http://192.168.21.18:8083",
       "http://192.168.21.18:8084",
+      "http://192.168.21.18:8087"
     ],
   })
 );
@@ -76,14 +77,12 @@ app.delete('/administradores/:numero_empleado', (req, res) => {
   });
 });
 
-// Agrega la ruta de autenticación para el login
 app.post('/api/auth/login', async (req, res) => {
   const { correo, contrasena } = req.body;
 
-  // Llamamos al servicio para verificar el correo y la contraseña
   administradorService.login(correo, contrasena)
-    .then(token => {
-      res.json({ token }); // Enviamos el token al frontend
+    .then(({ token, usuario }) => {
+      res.json({ token, usuario }); // ← Ahora también enviamos los datos del usuario
     })
     .catch(err => {
       console.error('Error al iniciar sesión:', err);
@@ -92,6 +91,6 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // **Iniciar el servidor**
-app.listen(port, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
+app.listen(port, "0.0.0.0", () => {
+  console.log(`🚀 Servidor corriendo en http://0.0.0.0:${port}`);
 });

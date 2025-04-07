@@ -16,7 +16,7 @@ app.use(
       "http://localhost:8083",
       "http://192.168.21.18:8083",
       "http://192.168.21.18:8084",
-      "http://192.168.21.18:8087"
+      "http://192.168.21.18:8087",
     ],
   })
 );
@@ -43,50 +43,69 @@ app.get("/administradores", async (req, res) => {
   }
 });
 
-app.post('/api/usuarios_admin', async (req, res) => {
+app.post("/api/usuarios_admin", async (req, res) => {
   try {
-    const { numeroEmpleado, nombre, apellidoPaterno, apellidoMaterno, rol, correo, clave } = req.body;
+    const {
+      numeroEmpleado,
+      nombre,
+      apellidoPaterno,
+      apellidoMaterno,
+      rol,
+      correo,
+      clave,
+    } = req.body;
 
-    const adminData = { numeroEmpleado, nombre, apellidoPaterno, apellidoMaterno, rol, correo, clave };
+    const adminData = {
+      numeroEmpleado,
+      nombre,
+      apellidoPaterno,
+      apellidoMaterno,
+      rol,
+      correo,
+      clave,
+    };
 
     const result = await administradorService.agregarAdministrador(adminData); // Llamamos al servicio
 
-    res.status(201).json({ message: 'Administrador agregado correctamente', data: result });
+    res
+      .status(201)
+      .json({ message: "Administrador agregado correctamente", data: result });
   } catch (err) {
-    console.error('Error al agregar el administrador:', err);
-    res.status(500).json({ error: 'Error al agregar el administrador' });
+    console.error("Error al agregar el administrador:", err);
+    res.status(500).json({ error: "Error al agregar el administrador" });
   }
 });
 
-app.delete('/administradores/:numero_empleado', (req, res) => {
+app.delete("/administradores/:numero_empleado", (req, res) => {
   const { numero_empleado } = req.params;
 
   // Consulta para eliminar al administrador por número de empleado
-  const query = 'DELETE FROM usuarios_admin WHERE numero_empleado = ?';
+  const query = "DELETE FROM usuarios_admin WHERE numero_empleado = ?";
   db.query(query, [numero_empleado], (err, results) => {
     if (err) {
-      console.error('Error en la consulta:', err);
-      return res.status(500).send('Error al eliminar el administrador');
+      console.error("Error en la consulta:", err);
+      return res.status(500).send("Error al eliminar el administrador");
     }
 
     if (results.affectedRows === 0) {
-      return res.status(404).send('Administrador no encontrado');
+      return res.status(404).send("Administrador no encontrado");
     }
 
-    res.status(200).send('Administrador eliminado con éxito');
+    res.status(200).send("Administrador eliminado con éxito");
   });
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post("/api/auth/login", async (req, res) => {
   const { correo, contrasena } = req.body;
 
-  administradorService.login(correo, contrasena)
+  administradorService
+    .login(correo, contrasena)
     .then(({ token, usuario }) => {
       res.json({ token, usuario }); // ← Ahora también enviamos los datos del usuario
     })
-    .catch(err => {
-      console.error('Error al iniciar sesión:', err);
-      res.status(401).json({ error: 'Credenciales inválidas' });
+    .catch((err) => {
+      console.error("Error al iniciar sesión:", err);
+      res.status(401).json({ error: "Credenciales inválidas" });
     });
 });
 

@@ -6,8 +6,11 @@ const db = require('../config/db');
 // **Registro de usuario (Administradores)**
 exports.register = async (req, res) => {
     const { nombre, apellido_paterno, apellido_materno, correo, contrasena, rol } = req.body;
-    const hashedPassword = await bcrypt.hash(contrasena, 10);
+    console.log('Registrando usuario con contraseña:', contrasena); // 🔍
 
+    const hashedPassword = await bcrypt.hash(contrasena, 10);
+    console.log('Contraseña encriptada:', hashedPassword); // 🔍
+    
     db.query('INSERT INTO usuarios_admin (nombre, apellido_paterno, apellido_materno, correo, contrasena, rol) VALUES (?, ?, ?, ?, ?, ?)',
         [nombre, apellido_paterno, apellido_materno, correo, hashedPassword, rol],
         (err) => {
@@ -47,5 +50,15 @@ exports.login = (req, res) => {
         );
 
         res.json({ token, usuario }); // 👈 Ahora mandamos también el usuario
+    });
+};
+
+exports.actualizarPassword = async (req, res) => {
+    const { id, nuevaContrasena } = req.body;
+    const hashedPassword = await bcrypt.hash(nuevaContrasena, 10);
+
+    db.query('UPDATE usuarios_admin SET contrasena = ? WHERE id = ?', [hashedPassword, id], (err) => {
+        if (err) return res.status(500).json({ error: 'Error al actualizar contraseña' });
+        res.json({ message: 'Contraseña actualizada correctamente' });
     });
 };

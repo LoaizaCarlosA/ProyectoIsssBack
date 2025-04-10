@@ -20,7 +20,7 @@ const obtenerAdministradores = () => {
 // Función para agregar un nuevo administrador
 // Función para agregar un nuevo administrador
 const agregarAdministrador = (adminData) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const {
       numeroEmpleado,
       nombre,
@@ -28,16 +28,12 @@ const agregarAdministrador = (adminData) => {
       apellidoMaterno,
       rol,
       correo,
-      clave,
+      clave,  // Esta es la contraseña que recibes
     } = adminData;
 
     // Asegurarnos de que los valores de apellidoPaterno y apellidoMaterno no sean undefined
-    const apellidoPaternoFinal = apellidoPaterno
-      ? apellidoPaterno
-      : "No Apellido Paterno";
-    const apellidoMaternoFinal = apellidoMaterno
-      ? apellidoMaterno
-      : "No Apellido Materno";
+    const apellidoPaternoFinal = apellidoPaterno ? apellidoPaterno : "No Apellido Paterno";
+    const apellidoMaternoFinal = apellidoMaterno ? apellidoMaterno : "No Apellido Materno";
 
     console.log("Datos recibidos en el backend:", adminData); // Verificar los datos recibidos
 
@@ -46,10 +42,15 @@ const agregarAdministrador = (adminData) => {
       return reject("Número de empleado no válido.");
     }
 
+    // Encriptar la contraseña antes de guardarla
+    const hashedPassword = await bcrypt.hash(clave, 10);
+    console.log('Contraseña encriptada:', hashedPassword); // 🔍
+
     const query = `
-            INSERT INTO usuarios_admin (numero_empleado, nombre, apellido_paterno, apellido_materno, rol, correo, contrasena)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        `;
+      INSERT INTO usuarios_admin (numero_empleado, nombre, apellido_paterno, apellido_materno, rol, correo, contrasena)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+    
     const values = [
       numeroEmpleado,
       nombre,
@@ -57,7 +58,7 @@ const agregarAdministrador = (adminData) => {
       apellidoMaternoFinal,
       rol,
       correo,
-      clave,
+      hashedPassword,  // Insertar la contraseña encriptada
     ];
 
     console.log("Consulta SQL:", query);

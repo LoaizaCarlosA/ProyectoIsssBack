@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const empleadoService = require("./src/services/empleadoService");
 const administradorService = require("./src/services/administradorService");
+const authRouter = require("./src/routes/authRoutes"); // Importa el router de autenticación
 
 // Importa la conexión a la base de datos
 const db = require("./src/config/db"); // Asegúrate de que la ruta sea correcta
@@ -78,6 +79,11 @@ app.post("/api/usuarios_admin", async (req, res) => {
 
 app.delete("/administradores/:numero_empleado", (req, res) => {
   const { numero_empleado } = req.params;
+  console.log("Número de empleado:", numero_empleado); // Verifica aquí
+
+  if (!numero_empleado) {
+    return res.status(400).send("El número de empleado es requerido");
+  }
 
   // Consulta para eliminar al administrador por número de empleado
   const query = "DELETE FROM usuarios_admin WHERE numero_empleado = ?";
@@ -95,24 +101,10 @@ app.delete("/administradores/:numero_empleado", (req, res) => {
   });
 });
 
-app.post("/api/auth/login", async (req, res) => {
-  const { correo, contrasena } = req.body;
-
-  administradorService
-    .login(correo, contrasena)
-    .then(({ token, usuario }) => {
-      res.json({ token, usuario }); // ← Ahora también enviamos los datos del usuario
-    })
-    .catch((err) => {
-      console.error("Error al iniciar sesión:", err);
-      res.status(401).json({ error: "Credenciales inválidas" });
-    });
-});
+// **Rutas de autenticación (incluye forgot-password)**
+app.use("/api/auth", authRouter);  // Monta las rutas de autenticación aquí
 
 // **Iniciar el servidor**
 app.listen(port, "0.0.0.0", () => {
   console.log(`🚀 Servidor corriendo en http://0.0.0.0:${port}`);
 });
-
-
-// Comentarios de prueba, cree nueva rama

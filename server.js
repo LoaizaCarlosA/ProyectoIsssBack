@@ -3,6 +3,7 @@ const cors = require("cors");
 const empleadoService = require("./src/services/empleadoService");
 const administradorService = require("./src/services/administradorService");
 const authRouter = require("./src/routes/authRoutes"); // Importa el router de autenticación
+require("dotenv").config();
 
 // Importa la conexión a la base de datos
 const db = require("./src/config/db"); // Asegúrate de que la ruta sea correcta
@@ -102,7 +103,7 @@ app.delete("/administradores/:numero_empleado", (req, res) => {
 });
 
 // **Rutas de autenticación (incluye forgot-password)**
-app.use("/api/auth", authRouter);  // Monta las rutas de autenticación aquí
+app.use("/api/auth", authRouter); // Monta las rutas de autenticación aquí
 
 // **Iniciar el servidor**
 app.listen(port, "0.0.0.0", () => {

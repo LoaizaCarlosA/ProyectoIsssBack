@@ -1,9 +1,10 @@
 const mysql = require('mysql2'); // Cambiar a mysql2
+require('dotenv').config();
 
 const db = mysql.createConnection({
-  host: process.env.DB_HOST || "localhost",  // Usamos la IP configurada en el .env
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "Mysqlisss",  // Ajusta las credenciales
+  host: process.env.DB_HOST || "192.168.21.105",  // Usamos la IP configurada en el .env
+  user: process.env.DB_USER || "CarlosLoaiza",
+  password: process.env.DB_PASSWORD || "123",  // Ajusta las credenciales
   database: process.env.DB_NAME || "mi_sistema"
 });
 

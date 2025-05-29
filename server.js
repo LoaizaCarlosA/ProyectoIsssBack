@@ -21,8 +21,12 @@ app.use(
       "http://192.168.21.18:8087",
       "http://192.168.21.148:8083",  
     ],
+    credentials: true,
+    
   })
 );
+
+app.options("*", cors()); 
 
 // **Rutas para empleados** (sin cambios)
 app.get("/empleados", async (req, res) => {

@@ -2,37 +2,38 @@
 const db = require('../config/db');
 
 // Obtener todos los empleados
-async function obtenerEmpleados() {
-    try {
-        const [rows] = await db.query('SELECT * FROM empleados');
-        return rows;
-    } catch (err) {
-        throw err;
-    }
+function obtenerEmpleados() {
+    return new Promise((resolve, reject) => {
+        db.query('SELECT * FROM empleados', (err, results) => {
+            if (err) reject(err);
+            resolve(results);
+        });
+    });
 }
 
 // Agregar un nuevo empleado
-async function agregarEmpleado(empleado) {
-    const { nombre, apellPa, apellMa, rol, telefono, correo } = empleado;
-    try {
-        await db.query(
+function agregarEmpleado(empleado) {
+    return new Promise((resolve, reject) => {
+        const { nombre, apellPa, apellMa, rol, telefono, correo } = empleado;
+        db.query(
             'INSERT INTO empleados (nombre, apellPa, apellMa, rol, telefono, correo) VALUES (?, ?, ?, ?, ?, ?)',
-            [nombre, apellPa, apellMa, rol, telefono, correo]
+            [nombre, apellPa, apellMa, rol, telefono, correo],
+            (err) => {
+                if (err) reject(err);
+                resolve('Empleado agregado correctamente');
+            }
         );
-        return 'Empleado agregado correctamente';
-    } catch (err) {
-        throw err;
-    }
+    });
 }
 
 // Eliminar un empleado
-async function eliminarEmpleado(id) {
-    try {
-        await db.query('DELETE FROM empleados WHERE id = ?', [id]);
-        return 'Empleado eliminado correctamente';
-    } catch (err) {
-        throw err;
-    }
+function eliminarEmpleado(id) {
+    return new Promise((resolve, reject) => {
+        db.query('DELETE FROM empleados WHERE id = ?', [id], (err) => {
+            if (err) reject(err);
+            resolve('Empleado eliminado correctamente');
+        });
+    });
 }
 
 module.exports = { obtenerEmpleados, agregarEmpleado, eliminarEmpleado };

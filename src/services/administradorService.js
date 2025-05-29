@@ -1,95 +1,117 @@
+// src/services/administradorService.js
+const connection = require("../config/db"); // Importamos la conexión a la base de datos
+
+// Función para obtener todos los administradores
+const obtenerAdministradores = () => {
+  return new Promise((resolve, reject) => {
+    const query =
+      "SELECT id, nombre, apellido_paterno, apellido_materno, correo, rol, numero_empleado, contrasena, fecha_creacion FROM usuarios_admin";
+
+    connection.query(query, (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results); // Incluir numero_empleado en los resultados
+      }
+    });
+  });
+};
+
+// Función para agregar un nuevo administrador
+// Función para agregar un nuevo administrador
+const agregarAdministrador = (adminData) => {
+  return new Promise(async (resolve, reject) => {
+    const {
+      numeroEmpleado,
+      nombre,
+      apellidoPaterno,
+      apellidoMaterno,
+      rol,
+      correo,
+      clave,  // Esta es la contraseña que recibes
+    } = adminData;
+
+    // Asegurarnos de que los valores de apellidoPaterno y apellidoMaterno no sean undefined
+    const apellidoPaternoFinal = apellidoPaterno ? apellidoPaterno : "No Apellido Paterno";
+    const apellidoMaternoFinal = apellidoMaterno ? apellidoMaterno : "No Apellido Materno";
+
+    console.log("Datos recibidos en el backend:", adminData); // Verificar los datos recibidos
+
+    // Verificar que numeroEmpleado es un número válido
+    if (!numeroEmpleado || isNaN(numeroEmpleado) || numeroEmpleado <= 0) {
+      return reject("Número de empleado no válido.");
+    }
+
+    // Encriptar la contraseña antes de guardarla
+    const hashedPassword = await bcrypt.hash(clave, 10);
+    console.log('Contraseña encriptada:', hashedPassword); // 🔍
+
+    const query = `
+      INSERT INTO usuarios_admin (numero_empleado, nombre, apellido_paterno, apellido_materno, rol, correo, contrasena)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+    
+    const values = [
+      numeroEmpleado,
+      nombre,
+      apellidoPaternoFinal,
+      apellidoMaternoFinal,
+      rol,
+      correo,
+      hashedPassword,  // Insertar la contraseña encriptada
+    ];
+
+    console.log("Consulta SQL:", query);
+    console.log("Valores para la consulta:", values);
+
+    connection.query(query, values, (err, results) => {
+      if (err) {
+        console.error("Error en la inserción:", err);
+        reject(err);
+      } else {
+        resolve(results);
+      }
+    });
+  });
+};
+
+// src/services/administradorService.js
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const db = require("../config/db"); // ya es un pool con mysql2/promise
+const db = require("../config/db"); // Asegúrate de que la ruta sea correcta
 
-// Obtener todos los administradores
-const obtenerAdministradores = async () => {
-  try {
-    const [rows] = await db.query(`
-      SELECT id, nombre, apellido_paterno, apellido_materno, correo, rol, numero_empleado, contrasena, fecha_creacion 
-      FROM usuarios_admin
-    `);
-    return rows;
-  } catch (error) {
-    throw error;
-  }
-};
-
-// Agregar nuevo administrador
-const agregarAdministrador = async (adminData) => {
-  const {
-    numeroEmpleado,
-    nombre,
-    apellidoPaterno,
-    apellidoMaterno,
-    rol,
-    correo,
-    clave,
-  } = adminData;
-
-  const apellidoPaternoFinal = apellidoPaterno || "No Apellido Paterno";
-  const apellidoMaternoFinal = apellidoMaterno || "No Apellido Materno";
-
-  if (!numeroEmpleado || isNaN(numeroEmpleado) || numeroEmpleado <= 0) {
-    throw new Error("Número de empleado no válido.");
-  }
-
-  const hashedPassword = await bcrypt.hash(clave, 10);
-
-  const query = `
-    INSERT INTO usuarios_admin (numero_empleado, nombre, apellido_paterno, apellido_materno, rol, correo, contrasena)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `;
-
-  const values = [
-    numeroEmpleado,
-    nombre,
-    apellidoPaternoFinal,
-    apellidoMaternoFinal,
-    rol,
-    correo,
-    hashedPassword,
-  ];
-
-  try {
-    const [result] = await db.query(query, values);
-    return result;
-  } catch (error) {
-    throw error;
-  }
-};
-
-// Login administrador
-const login = async (correo, contrasena) => {
-  try {
-    const [results] = await db.query(
-      "SELECT * FROM usuarios_admin WHERE correo = ?",
-      [correo]
-    );
-
-    if (results.length === 0) {
-      throw new Error("Credenciales inválidas");
-    }
-
-    const usuario = results[0];
-    const isValidPassword = await bcrypt.compare(contrasena, usuario.contrasena);
-
-    if (!isValidPassword) {
-      throw new Error("Credenciales inválidas");
-    }
-
-    const token = jwt.sign(
-      { id: usuario.id, correo: usuario.correo, rol: usuario.rol },
-      "secreto",
-      { expiresIn: "1h" }
-    );
-
-    const { contrasena: _, ...usuarioSinPassword } = usuario;
-    return { token, usuario: usuarioSinPassword };
-  } catch (error) {
-    throw error;
-  }
-};
+// Función de login para administradores
+const login = (correo, contrasena) => {
+    return new Promise((resolve, reject) => {
+      db.query(
+        "SELECT * FROM usuarios_admin WHERE correo = ?",
+        [correo],
+        async (err, results) => {
+          if (err || results.length === 0) {
+            return reject("Credenciales inválidas");
+          }
+  
+          const usuario = results[0];
+          const isValidPassword = await bcrypt.compare(contrasena, usuario.contrasena);
+  
+          if (!isValidPassword) {
+            return reject("Credenciales inválidas");
+          }
+  
+          const token = jwt.sign(
+            { id: usuario.id, correo: usuario.correo, rol: usuario.rol },
+            "secreto",
+            { expiresIn: "1h" }
+          );
+  
+          // Devuelve también los datos del usuario (puedes quitar contrasena)
+          const { contrasena: _, ...usuarioSinPassword } = usuario;
+          resolve({ token, usuario: usuarioSinPassword });
+        }
+      );
+    });
+  };
+  
 
 module.exports = {
   login,
